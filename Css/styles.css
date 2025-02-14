@@ -1,0 +1,40 @@
+body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            background-color: #343a40;
+            color: white;
+        }
+        .sidebar h4 {
+            background-color: #212529;
+            padding: 15px;
+            margin: 0;
+            text-align: center;
+        }
+        .sidebar .nav-link {
+            color: white;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #495057;
+        }
+        .active-link {
+            background-color: #007bff !important;
+            color: white !important;
+        }
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .btn-lg {
+            width: 100%;
+            padding: 20px;
+            font-size: 18px;
+        }
