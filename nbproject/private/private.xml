@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/index.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/Css/styles.css</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/Model/UserModel.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/photos/0101_1739277378_chaw.png</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/View/attendance.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/Controller/AttendanceController.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/Model/TeacherProfileModel.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/photos/0102_1739277345_sophia.png</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/View/teacherAttendance.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/View/studentDashboard.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/View/login.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/View/adminDashboard.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/View/recognize.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/Config/databaseConfig.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/test.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/View/studentattendancemarking.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/Controller/TeacherProfileController.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/Model/AttendanceModel.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/Controller/LoginController.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/View/teacherDashboard.php</file>
+            <file>file:/C:/xampp/htdocs/AutomatedTuitionCentreAttendanceSystem/View/teacherProfile.php</file>
+        </group>
+    </open-files>
+</project-private>
