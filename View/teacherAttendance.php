@@ -99,31 +99,85 @@ $teacherID = $_SESSION['user']['userID'];
                     <div class="row mt-4">
                         <div class="col-md-6">
                             <div class="card shadow-sm">
-                                <div class="card-body">
+                                <div class="card-body text-center">
                                     <h5 class="card-title">Time In</h5>
-                                    <form action="../Controller/AttendanceController.php" method="POST">
-                                        <input type="hidden" name="teacherID" value="<?= htmlspecialchars($teacherID); ?>">
-                                        <button type="submit" name="timeIn" class="btn btn-success btn-lg">Time In</button>
-                                    </form>
+                                    <button id="timeInBtn" class="btn btn-success btn-lg">Time In</button>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="card shadow-sm">
-                                <div class="card-body">
+                                <div class="card-body text-center">
                                     <h5 class="card-title">Time Out</h5>
-                                    <form action="../Controller/AttendanceController.php" method="POST">
-                                        <input type="hidden" name="teacherID" value="<?= htmlspecialchars($teacherID); ?>">
-                                        <button type="submit" name="timeOut" class="btn btn-danger btn-lg">Time Out</button>
-                                    </form>
+                                    <button id="timeOutBtn" class="btn btn-danger btn-lg">Time Out</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </main>
+                    <!-- Webcam Preview -->
+                    <div class="mt-4 text-center">
+                        <video id="video" width="640" height="480" autoplay></video>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        <p id="status"></p>
+                    </div>
             </div>
-        </div>
+        </main>
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+    <script>
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const context = canvas.getContext("2d");
+        const statusText = document.getElementById("status");
+
+        let scanning = false;
+
+        navigator.mediaDevices.getUserMedia({video: true})
+                .then(stream => video.srcObject = stream)
+                .catch(err => console.error("Error accessing webcam:", err));
+
+        function captureAndSendImage(action) {
+            if (!scanning)
+                return;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(blob => {
+                let formData = new FormData();
+                formData.append("image", blob);
+                formData.append("action", action);
+
+                fetch("http://127.0.0.1:5000/recognize_teacher", {
+                    method: "POST",
+                    body: formData
+                })
+                        .then(response => response.json())
+                        .then(data => {
+                            statusText.innerText = data.message;
+                            if (data.status === "success") {
+                                alert("✅ " + data.message);
+                            } else {
+                                alert("❌ " + data.message);
+                            }
+                        })
+                        .catch(error => console.error("Error:", error));
+            }, "image/jpeg");
+        }
+
+        document.getElementById("timeInBtn").addEventListener("click", () => {
+            scanning = true;
+            captureAndSendImage("timeIn");
+        });
+
+        document.getElementById("timeOutBtn").addEventListener("click", () => {
+            scanning = true;
+            captureAndSendImage("timeOut");
+        });
+    </script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
