@@ -14,8 +14,19 @@ class TeacherProfileController {
 
     public function uploadPhoto($teacherID, $file) {
         $targetDir = "../photos/";
+
+        // Fetch the existing photo from the database
+        $teacher = $this->model->getTeacherProfile($teacherID);
+        $oldPhoto = $teacher['photo'] ?? null;
+
+        // Generate a new filename
         $fileName = $teacherID . "_" . time() . "_" . basename($file["name"]);
         $targetFilePath = $targetDir . $fileName;
+
+        // Delete old profile photo if exists
+        if ($oldPhoto && file_exists("../" . $oldPhoto)) {
+            unlink("../" . $oldPhoto);
+        }
 
         // Move uploaded file to 'photos/' directory
         if (move_uploaded_file($file["tmp_name"], $targetFilePath)) {
