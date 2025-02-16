@@ -119,7 +119,7 @@
                     </div>
                     <div class="mb-3 password-container">
                         <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                        <span class="toggle-password">
+                        <span class="toggle-password" id="eyeIcon">
                             <i class="fa fa-eye" id="eyeIcon"></i>
                         </span>
                     </div>
