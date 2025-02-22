@@ -53,13 +53,132 @@ $schedule = $controller->getSchedule($teacherID);
                 margin-left: 260px;
                 padding: 20px;
             }
-            .card {
+            .table-container {
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            }
+            .styled-table {
+                width: 100%;
+                border-collapse: collapse;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .styled-table th {
+                background: #007bff;
+                color: white;
+                padding: 12px;
+                text-align: center;
+            }
+            .styled-table td {
+                padding: 12px;
+                text-align: center;
+                vertical-align: middle;
+            }
+            .styled-table tbody tr:nth-child(even) {
+                background: #f2f2f2;
+            }
+            .styled-table tbody tr:hover {
+                background: #e9ecef;
+            }
+            .action-buttons {
+                display: flex;
+                gap: 8px;
+                justify-content: center;
+            }
+            .view-btn, .enroll-btn {
+                padding: 6px 12px;
+                border-radius: 5px;
+                font-size: 14px;
+                cursor: pointer;
                 transition: 0.3s;
+                border: none;
             }
-            .card:hover {
-                transform: scale(1.05);
+            .view-btn {
+                background-color: #007bff;
+                color: white;
             }
+            .view-btn:hover {
+                background-color: #0056b3;
+            }
+            .enroll-btn {
+                background-color: #28a745;
+                color: white;
+            }
+            .enroll-btn:hover {
+                background-color: #218838;
+            }
+            .student-list {
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                margin-top: 20px;
+                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            }
+            .modal-header {
+                background: #007bff;
+                color: white;
+            }
+            .modal-footer {
+                justify-content: center;
+            }
+            .styled-table {
+                width: 100%;
+                border-collapse: collapse;
+                border-radius: 10px;
+                overflow: hidden;
+                background: white;
+            }
+            .styled-table thead th {
+                background: #007bff;
+                color: white;
+                padding: 12px;
+                text-align: center;
+                font-weight: bold;
+            }
+            .styled-table tbody td {
+                padding: 12px;
+                text-align: center;
+                vertical-align: middle;
+                border-bottom: 1px solid #ddd;
+            }
+            .styled-table tbody tr:nth-child(even) {
+                background: #f8f9fa;
+            }
+            .styled-table tbody tr:hover {
+                background: #e9ecef;
+                transition: 0.2s;
+            }
+            .action-buttons {
+                display: flex;
+                gap: 8px;
+                justify-content: center;
+            }
+            .btn-sm {
+                padding: 6px 12px;
+                font-size: 14px;
+                border-radius: 6px;
+                transition: all 0.3s;
+                font-weight: bold;
+            }
+            .view-btn {
+                background-color: #007bff;
+                color: white;
+            }
+            .view-btn:hover {
+                background-color: #0056b3;
+            }
+            .enroll-btn {
+                background-color: #28a745;
+                color: white;
+            }
+            .enroll-btn:hover {
+                background-color: #218838;
+            }
+
         </style>
+
     </head>
     <body>
         <div class="container-fluid">
@@ -96,65 +215,67 @@ $schedule = $controller->getSchedule($teacherID);
 
                 <!-- Main Content Section -->
                 <main class="col-md-9 ms-sm-auto col-lg-10 px-4 main-content">
-                    <div class="container">    
+                    <div class="container">
                         <h2 class="mt-4">Class Schedule</h2>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Subject</th>
-                                    <th>Day</th>
-                                    <th>Time</th>
-                                    <th>Location</th>
-                                    <th>Capacity</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($schedule as $class): ?>
+                        <div class="table-responsive">
+                            <table class="table styled-table">
+                                <thead>
                                     <tr>
-                                        <td><?= htmlspecialchars($class["subject"]); ?></td>
-                                        <td><?= htmlspecialchars($class["day"]); ?></td>
-                                        <td><?= htmlspecialchars($class["startTime"] . " - " . $class["endTime"]); ?></td>
-                                        <td><?= htmlspecialchars($class["location"]); ?></td>
-                                        <td><?= htmlspecialchars($class["capacity"]); ?></td>
-                                        <td>
-                                            <button class="btn btn-primary" onclick="viewStudents('<?= $class['classID']; ?>')">View Students</button>
-                                            <button class="btn btn-success" onclick="enrollStudent('<?= $class['classID']; ?>')">Enroll Student</button>
-                                        </td>
+                                        <th>Subject</th>
+                                        <th>Day</th>
+                                        <th>Time</th>
+                                        <th>Location</th>
+                                        <th>Capacity</th>
+                                        <th>Actions</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($schedule as $class): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($class["subject"]); ?></td>
+                                            <td><?= htmlspecialchars($class["day"]); ?></td>
+                                            <td><?= htmlspecialchars($class["startTime"] . " - " . $class["endTime"]); ?></td>
+                                            <td><?= htmlspecialchars($class["location"]); ?></td>
+                                            <td id="capacity-<?= $class['classID']; ?>"><?= htmlspecialchars($class["capacity"]); ?></td>
+                                            <td class="action-buttons">
+                                                <button class="btn btn-sm btn-primary view-btn" onclick="viewStudents('<?= $class['classID']; ?>')">👀 View</button>
+                                                <button class="btn btn-sm btn-success enroll-btn" onclick="enrollStudent('<?= $class['classID']; ?>')">➕ Enroll</button>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
 
-                        <!-- Student List Section -->
-                        <div id="studentListContainer" class="mt-4" style="display: none;">
-                            <h4>Enrolled Students</h4>
-                            <ul id="studentList" class="list-group"></ul>
-                        </div>
 
-                        <!-- Enrollment Modal -->
-                        <div class="modal fade" id="enrollModal" tabindex="-1" aria-labelledby="enrollModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="enrollModalLabel">Enroll Student</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form id="enrollForm">
-                                            <input type="hidden" id="classID">
-                                            <label for="studentID">Select Student:</label>
-                                            <select id="studentID" class="form-control" required></select>
-                                            <div class="mt-3 text-center">
-                                                <button type="submit" class="btn btn-primary">Enroll</button>
-                                            </div>
-                                        </form>
+                            <!-- Student List Section -->
+                            <div id="studentListContainer" class="mt-4" style="display: none;">
+                                <h4>Enrolled Students</h4>
+                                <ul id="studentList" class="list-group"></ul>
+                            </div>
+
+                            <!-- Enrollment Modal -->
+                            <div class="modal fade" id="enrollModal" tabindex="-1" aria-labelledby="enrollModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="enrollModalLabel">Enroll Student</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="enrollForm">
+                                                <input type="hidden" id="classID">
+                                                <label for="studentID">Select Student:</label>
+                                                <select id="studentID" class="form-control" required></select>
+                                                <div class="mt-3 text-center">
+                                                    <button type="submit" class="btn btn-primary">Enroll</button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                    </div>
+                        </div>
                 </main>
             </div>
         </div>
@@ -189,7 +310,7 @@ $schedule = $controller->getSchedule($teacherID);
             }
 
             function removeStudent(studentID, classID) {
-                if (confirm("Are you sure you want to remove this student from the class?")) {
+                if (confirm("Are you sure you want to remove this student from the class? This will also delete their timetable.")) {
                     fetch("../Controller/ClassScheduleController.php", {
                         method: "POST",
                         headers: {"Content-Type": "application/x-www-form-urlencoded"},
@@ -209,6 +330,7 @@ $schedule = $controller->getSchedule($teacherID);
                             });
                 }
             }
+
 
             function updateCapacity(classID) {
                 fetch(`../Controller/ClassScheduleController.php?action=getClassCapacity&classID=${classID}`)
@@ -273,7 +395,7 @@ $schedule = $controller->getSchedule($teacherID);
                             console.error(error);
                         });
             });
-        </script>
 
+        </script>
     </body>
 </html>
