@@ -29,7 +29,7 @@ class ClassScheduleController {
     public function removeStudent($studentID, $classID) {
         $result = $this->model->removeStudentFromClass($studentID, $classID);
         if ($result) {
-            echo json_encode(["status" => "success", "message" => "Student removed successfully."]);
+            echo json_encode(["status" => "success", "message" => "Student removed successfully from class and timetable."]);
         } else {
             echo json_encode(["status" => "error", "message" => "Failed to remove student."]);
         }
