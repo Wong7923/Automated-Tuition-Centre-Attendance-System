@@ -1,0 +1,53 @@
+USE tuitioncentredb;
+DELIMITER $$
+
+CREATE EVENT IF NOT EXISTS send_notifications_event
+ON SCHEDULE EVERY 1 MINUTE
+STARTS TIMESTAMP(CURDATE(), '00:00:00')
+DO
+BEGIN
+    -- Insert notifications 15 minutes before class starts
+    INSERT INTO notification (notificationID, message, dateSent, studentID, Expiring_QR_Code)
+    SELECT 
+        CONCAT('NT', LPAD(@nextID := @nextID + 1, 5, '0')) AS newNotificationID,  -- Ensuring unique IDs
+        CONCAT('Reminder: Your class for ', c.subject, ' starts in 15 minutes. Please be ready!'),
+        NOW(),
+        s.studentID,
+        NULL
+    FROM (SELECT @nextID := IFNULL(MAX(CAST(SUBSTRING(notificationID, 3) AS UNSIGNED)), 0) FROM notification) AS init
+    JOIN student s
+    JOIN timetable t ON s.studentID = t.studentID
+    JOIN class c ON t.classID = c.classID  
+    LEFT JOIN notification n ON n.studentID = s.studentID 
+         AND n.message LIKE CONCAT('%', c.subject, '% class starts in 15 minutes%')
+         AND DATE(n.dateSent) = CURDATE()
+    LEFT JOIN studentattendance sa ON sa.timetableID = t.timetableID AND sa.studentID = s.studentID
+    WHERE t.date = CURDATE()
+    AND TIMESTAMPDIFF(MINUTE, NOW(), CAST(CONCAT(t.date, ' ', c.startTime) AS DATETIME)) = 15
+    AND sa.attendanceID IS NULL -- Only send if attendance hasn't been taken
+    AND n.notificationID IS NULL;  -- Prevent duplicate reminders
+
+    -- Insert notifications 15 minutes before class ends, only if attendance hasn't been taken
+    INSERT INTO notification (notificationID, message, dateSent, studentID, Expiring_QR_Code)
+    SELECT 
+        CONCAT('NT', LPAD(@nextID := @nextID + 1, 5, '0')) AS newNotificationID,  -- Ensuring unique IDs
+        CONCAT('Last chance: Your class for ', c.subject, ' class is ending soon! Please mark your attendance if you haven''t already.'),
+        NOW(),
+        s.studentID,
+        NULL
+    FROM (SELECT @nextID := IFNULL(MAX(CAST(SUBSTRING(notificationID, 3) AS UNSIGNED)), 0) FROM notification) AS init
+    JOIN student s
+    JOIN timetable t ON s.studentID = t.studentID
+    JOIN class c ON t.classID = c.classID
+    LEFT JOIN studentattendance sa ON sa.timetableID = t.timetableID AND sa.studentID = s.studentID
+    LEFT JOIN notification n ON n.studentID = s.studentID 
+         AND n.message LIKE CONCAT('%', c.subject, '% class is ending soon%')
+         AND DATE(n.dateSent) = CURDATE()
+    WHERE t.date = CURDATE()
+    AND TIMESTAMPDIFF(MINUTE, NOW(), CAST(CONCAT(t.date, ' ', c.endTime) AS DATETIME)) = 15
+    AND sa.attendanceID IS NULL  -- Only send if attendance hasn't been taken
+    AND n.notificationID IS NULL;  -- Prevent duplicate reminders
+
+END $$
+
+DELIMITER ;

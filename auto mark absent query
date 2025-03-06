@@ -1,0 +1,32 @@
+USE tuitioncentredb;
+DELIMITER $$
+
+CREATE EVENT IF NOT EXISTS mark_absent_event
+ON SCHEDULE EVERY 1 SECOND 
+STARTS TIMESTAMP(CURDATE(), '00:00:00')  -- Starts today at 00:00 AM
+DO
+BEGIN
+    INSERT INTO studentattendance (attendanceID, studentID, status, attendance_Method, timetableID, attendance_time_stamp)
+    SELECT 
+        CONCAT('AT', LPAD(
+            (SELECT IFNULL(MAX(CAST(SUBSTRING(attendanceID, 3) AS UNSIGNED)), 0) 
+             FROM studentattendance) + ROW_NUMBER() OVER (ORDER BY t.studentID, t.classID), 5, '0')) AS newAttendanceID,
+        t.studentID,
+        'Absent',
+        'None',
+        t.timetableID,
+        NOW()
+    FROM timetable t
+    JOIN class c ON t.classID = c.classID  
+    LEFT JOIN studentattendance sa ON sa.timetableID = t.timetableID AND sa.studentID = t.studentID  
+    WHERE t.date = CURDATE()  -- Check for today's classes
+    AND sa.attendanceID IS NULL  
+    AND NOW() > CAST(CONCAT(t.date, ' ', c.endTime) AS DATETIME)  
+    ORDER BY t.studentID, t.classID;
+END $$
+
+DELIMITER ;
+
+
+
+
