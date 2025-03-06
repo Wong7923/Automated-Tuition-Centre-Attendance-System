@@ -9,7 +9,6 @@ import dlib
 import platform
 import uuid
 
-
 app = Flask(__name__)
 
 # Load Haar Cascade and Dlib's Facial Landmark Detector
@@ -45,7 +44,7 @@ def get_db_connection():
     return pymysql.connect(host="localhost", user="root", password="", database="tuitioncentredb")
 
 def generate_attendance_id(cursor):
-    cursor.execute("SELECT attendanceID FROM StudentAttendance ORDER BY attendanceID DESC LIMIT 1")
+    cursor.execute("SELECT attendanceID FROM studentattendance ORDER BY attendanceID DESC LIMIT 1")
     last_id = cursor.fetchone()
     
     if last_id and last_id[0].startswith("AT"):
@@ -56,18 +55,32 @@ def generate_attendance_id(cursor):
     
     return f"AT{new_number:05d}"
 
+def generate_notification_id(cursor):
+    cursor.execute("SELECT notificationID FROM notification ORDER BY notificationID DESC LIMIT 1")
+    last_id = cursor.fetchone()
+
+    if last_id and last_id[0].startswith("NT"):
+        last_number = int(last_id[0][2:])
+        new_number = last_number + 1
+    else:
+        new_number = 1
+    
+    return f"NT{new_number:05d}"
+
 def recognize_face():
     current_ssid = get_wifi_ssid()
     if current_ssid != REQUIRED_SSID:
-        return jsonify({"status": "error", "message": "Wrong WiFi! Connect to Tuition_Center_WiFi."}), 403
+        return jsonify({"status": "error", "message": "You are not connected to the correct network!"}), 403
     
-    if "image" not in request.files:
-        return jsonify({"status": "error", "message": "No image uploaded"}), 400
+    if "image" not in request.files or "studentID" not in request.form:
+        return jsonify({"status": "error", "message": "Missing image or student ID"}), 400
     
+    provided_student_id = request.form["studentID"]
+
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     unique_id = str(uuid.uuid4())[:8]
     file_path = os.path.join(UPLOAD_FOLDER, f"attendance_{timestamp}_{unique_id}.jpg")
-    
+
     file = request.files["image"]
     file.save(file_path)
 
@@ -92,7 +105,7 @@ def recognize_face():
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT studentID, photo FROM student")
+        cursor.execute("SELECT studentID, photo_recognition FROM student")
         students = cursor.fetchall()
 
         best_score = float("inf")
@@ -113,7 +126,10 @@ def recognize_face():
 
         THRESHOLD = 0.6  
         if best_score > THRESHOLD:
-            raise ValueError("No student matched confidently")
+            raise ValueError("No such student is enrolled in our tuition centre")
+
+        if best_student_id != provided_student_id:
+            raise ValueError("Face does not match the provided student ID! Please take your own attendance only")
 
         now = datetime.datetime.now()
         cursor.execute("""
@@ -130,40 +146,58 @@ def recognize_face():
             raise ValueError(f"Student ({best_student_id}) is not in the right class or time")
 
         timetable_id, class_id = class_result
-        
+
         cursor.execute("""
-            SELECT 1 FROM StudentAttendance 
+            SELECT attendance_time_stamp FROM studentattendance 
             WHERE studentID = %s AND timetableID = %s
         """, (best_student_id, timetable_id))
-        
-        if cursor.fetchone():
-            raise ValueError("Attendance already recorded for this student and class")
-        
+
+        existing_attendance = cursor.fetchone()
+
+        if existing_attendance:
+            attendance_time_stamp = existing_attendance[0]
+            raise ValueError(f"The class attendance is already recorded for this student ({best_student_id}) at {attendance_time_stamp}")
+
         new_attendance_id = generate_attendance_id(cursor)
-        
+
         cursor.execute("""
-            INSERT INTO StudentAttendance (attendanceID, studentID, status, attendance_Method, timetableID) 
-            VALUES (%s, %s, 'Present', 'facial_recognition', %s)
+            INSERT INTO studentattendance (attendanceID, studentID, status, attendance_Method, timetableID, attendance_time_stamp) 
+            VALUES (%s, %s, 'Present', 'facial_recognition', %s, NOW())
         """, (new_attendance_id, best_student_id, timetable_id))
+
+        cursor.execute("""
+            SELECT studentID, attendance_time_stamp FROM studentattendance WHERE attendanceID = %s
+        """, (new_attendance_id,))
+        student_id, attendance_time_stamp = cursor.fetchone()
+
+        new_notification_id = generate_notification_id(cursor)
+        notification_message = f"Attendance recorded for {student_id} at {attendance_time_stamp}"
+
+        cursor.execute("""
+        INSERT INTO notification (notificationID, message, dateSent, studentID, Expiring_QR_Code)
+        VALUES (%s, %s, NOW(), %s, NULL)
+    """, (new_notification_id, notification_message, student_id))
+
+
         conn.commit()
         conn.close()
-    
+
         return jsonify({
             "status": "success",
-            "message": "Attendance recorded",
+            "message": f"Attendance for student {student_id} recorded at {attendance_time_stamp}",
             "attendance_id": new_attendance_id,
             "student_id": best_student_id,
             "class_id": class_id,
             "timetable_id": timetable_id
         })
-    
+
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 400
     
     finally:
         os.remove(file_path)
 
-@app.route("/recognize", methods=["POST"])
+@app.route("/studentAttendanceMarking", methods=["POST"])
 def api_recognize():
     return recognize_face()
 
